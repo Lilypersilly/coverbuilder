@@ -1,0 +1,6 @@
+/target
+*.cbproj
+palettes.txt
+*.svg
+*.png
+!assets/*.png
