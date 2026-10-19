@@ -1,0 +1,8 @@
+[Desktop Entry]
+Name=CoverBuilder Studio
+Comment=Murakami-inspired geometric book cover design studio
+Exec=coverbuilder
+Icon=applications-graphics
+Terminal=false
+Type=Application
+Categories=Graphics;2DGraphics;VectorGraphics;Publishing;
