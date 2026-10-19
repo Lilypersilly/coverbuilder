@@ -1,0 +1,124 @@
+name: Build All Releases
+
+on:
+  workflow_dispatch:
+  release:
+    types: [published]
+
+permissions:
+  contents: write
+
+jobs:
+
+  build-windows:
+    runs-on: windows-latest
+    strategy:
+      matrix:
+        include:
+          - target: x86_64-pc-windows-msvc
+            out_name: coverbuilder-windows-64bit.exe
+          - target: i686-pc-windows-msvc
+            out_name: coverbuilder-windows-32bit.exe
+    steps:
+      - uses: actions/checkout@v4
+      - uses: dtolnay/rust-toolchain@stable
+        with:
+          targets: ${{ matrix.target }}
+      - name: Build Windows Release
+        run: cargo build --release --target ${{ matrix.target }}
+      - name: Rename Binary
+        run: copy "target\${{ matrix.target }}\release\coverbuilder.exe" "${{ matrix.out_name }}"
+        shell: cmd
+      - uses: actions/upload-artifact@v4
+        with:
+          name: ${{ matrix.out_name }}
+          path: ${{ matrix.out_name }}
+      - name: Attach to GitHub Release
+        if: github.event_name == 'release'
+        uses: softprops/action-gh-release@v2
+        with:
+          files: ${{ matrix.out_name }}
+
+
+  build-linux:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: dtolnay/rust-toolchain@stable
+      - name: Install Linux GUI & RPM Dependencies
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y libxcb-render0-dev libxcb-shape0-dev libxcb-xfixes0-dev libxkbcommon-dev libssl-dev rpm
+      - name: Install Packaging Tools (cargo-deb & cargo-generate-rpm)
+        run: cargo install cargo-deb cargo-generate-rpm
+      - name: Build Release Binary
+        run: cargo build --release
+      - name: Package .deb (Ubuntu / Debian / Mint)
+        run: cargo deb
+      - name: Package .rpm (Fedora / RHEL / openSUSE)
+        run: cargo generate-rpm
+      - name: Collect Linux Packages
+        run: |
+          mkdir dist-linux
+          cp target/release/coverbuilder dist-linux/coverbuilder-linux-x86_64
+          cp target/debian/*.deb dist-linux/
+          cp target/generate-rpm/*.rpm dist-linux/
+      - uses: actions/upload-artifact@v4
+        with:
+          name: linux-packages
+          path: dist-linux/*
+      - name: Attach to GitHub Release
+        if: github.event_name == 'release'
+        uses: softprops/action-gh-release@v2
+        with:
+          files: dist-linux/*
+
+
+  build-macos:
+    runs-on: macos-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: dtolnay/rust-toolchain@stable
+        with:
+          targets: aarch64-apple-darwin,x86_64-apple-darwin
+      - name: Build for Apple Silicon & Intel
+        run: |
+          cargo build --release --target aarch64-apple-darwin
+          cargo build --release --target x86_64-apple-darwin
+      - name: Create Universal macOS App Bundle (.app + .zip)
+        run: |
+          mkdir -p CoverBuilder.app/Contents/MacOS
+          lipo -create -output CoverBuilder.app/Contents/MacOS/coverbuilder \
+            target/aarch64-apple-darwin/release/coverbuilder \
+            target/x86_64-apple-darwin/release/coverbuilder
+          chmod +x CoverBuilder.app/Contents/MacOS/coverbuilder
+          cat > CoverBuilder.app/Contents/Info.plist <<EOF
+          <?xml version="1.0" encoding="UTF-8"?>
+          <!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+          <plist version="1.0">
+          <dict>
+              <key>CFBundleExecutable</key>
+              <string>coverbuilder</string>
+              <key>CFBundleIdentifier</key>
+              <string>com.lilypersilly.coverbuilder</string>
+              <key>CFBundleName</key>
+              <string>CoverBuilder Studio</string>
+              <key>CFBundlePackageType</key>
+              <string>APPL</string>
+              <key>CFBundleShortVersionString</key>
+              <string>0.1.0</string>
+              <key>NSHighResolutionCapable</key>
+              <true/>
+          </dict>
+          </plist>
+          EOF
+          zip -r coverbuilder-macos-universal-app.zip CoverBuilder.app
+      - uses: actions/upload-artifact@v4
+        with:
+          name: coverbuilder-macos-universal-app.zip
+          path: coverbuilder-macos-universal-app.zip
+      - name: Attach to GitHub Release
+        if: github.event_name == 'release'
+        uses: softprops/action-gh-release@v2
+        with:
+          files: coverbuilder-macos-universal-app.zip
