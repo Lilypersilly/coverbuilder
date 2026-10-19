@@ -1,0 +1,18 @@
+[package]
+name = "coverbuilder"
+version = "0.1.0"
+edition = "2021"
+authors = ["Lily Persilly"]
+description = "A Murakami-inspired geometric book cover design studio built in Rust & egui."
+license = "MIT"
+repository = "https://github.com/YOUR_USERNAME/coverbuilder"
+
+[dependencies]
+eframe = "0.37"
+
+
+[profile.release]
+opt-level = 3
+lto = true
+codegen-units = 1
+strip = true
