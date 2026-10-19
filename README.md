@@ -3,7 +3,7 @@
 A minimalist, geometric book cover design studio written in Rust using `eframe` / `egui`, inspired by classic modernist and Haruki Murakami / Vintage International book covers.
 
 ##  Features
-- **Interactive Canvas:** Smooth 25%–500% zoom, panning, and composition overlays (Rule of Thirds, Golden Ratio, Print Bleed).
+- **Interactive Canvas:** 25%–500% zoom, panning, and composition overlays (Rule of Thirds, Golden Ratio, Print Bleed).
 - **Geometric Shape Engine:** Circles/Ellipses, Half-Ellipses/Domes, Polygons/Stars, Triangles, Rectangles, and Lines.
 - **Customisable Edge Curves:** Bend edges inward or outward using Quadratic Arch, Sine/Bell Wave, S-Curve, Sharp V-Peak, or Circular Arc functions.
 - **Smart Snapping & Outer Margins:** Snap shapes to centres and edges, or hold `Ctrl` whilst dragging to snap using a customisable outer alignment margin.
