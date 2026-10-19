@@ -19,7 +19,8 @@ strip = true
 
 [package.metadata.generate-rpm]
 assets = [
-    { source = "target/release/coverbuilder", dest = "/usr/bin/coverbuilder", mode = "755" }
+    { source = "target/release/coverbuilder", dest = "/usr/bin/coverbuilder", mode = "755" },
+    { source = "coverbuilder.desktop", dest = "/usr/share/applications/coverbuilder.desktop", mode = "644" }
 ]
 [package.metadata.deb]
 maintainer = "Lily Persilly"
@@ -29,8 +30,4 @@ assets = [
     ["coverbuilder.desktop", "usr/share/applications/", "644"]
 ]
 
-[package.metadata.generate-rpm]
-assets = [
-    { source = "target/release/coverbuilder", dest = "/usr/bin/coverbuilder", mode = "755" },
-    { source = "coverbuilder.desktop", dest = "/usr/share/applications/coverbuilder.desktop", mode = "644" }
-]
+
